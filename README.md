@@ -65,8 +65,8 @@ GITHUB_PERSONAL_ACCESS_TOKEN=your_github_token_here
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
 CHAT_ID=your_chat_id_here
 
-USER_NAME = "github-username"
-REPO_NAME = "repository-name"
+USER_NAME='github-username'
+REPO_NAME='repository-name'
 ```
 
 Never commit `.env` — it is ignored via `.gitignore`.
