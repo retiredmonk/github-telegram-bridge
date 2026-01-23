@@ -1,4 +1,4 @@
-import logging
+import logging, os
 
 from github_fetch import *
 import config
@@ -35,7 +35,9 @@ def extract_latest_commit(data: list) -> dict:
 
 def main():
     setup_logging()
-
+    poll_interval = float(os.getenv('POLL_INTERVAL'))
+    user = os.getenv('GITHUB_OWNER')
+    repo = os.getenv('REPO_NAME')
     conn, _ = init_db()
 
     while True:
@@ -51,7 +53,7 @@ def main():
                 logging.info(f"New commit detected! Saving")
                 add_details(conn, latest)
                 message = (
-                    f"Latest commit in {USER_NAME}/{REPO_NAME}:\n\n"
+                    f"Latest commit in {user}/{repo}:\n\n"
                     f"{latest['commit']['message']}\n\n"
                     f"{latest['commit']['author']['name']}\\n"
                     f"{latest['sha']}\n\n"
@@ -73,8 +75,8 @@ def main():
         except Exception as e:
             logging.exception(f"Unexpected crash: {e}")
 
-        logging.info(f"Sleeping for {POLL_INTERVAL} seconds...\n")
-        time.sleep(POLL_INTERVAL)
+        logging.info(f"Sleeping for {poll_interval} seconds...\n")
+        time.sleep(poll_interval)
 
 
 if __name__ == "__main__":

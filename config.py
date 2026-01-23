@@ -23,13 +23,11 @@ HEADERS = {
     'Authorization': f'token {GITHUB_TOKEN}',
     'User-Agent': 'github-telegram-bridge/1.0'
 }
-USER_NAME = 'retiredmonk'
-REPO_NAME = 'Reddit-Fetcher'
+
 BACKOFF_BASE = 2
 MAX_RETRIES = 3
 TIMEOUT = 10
-POLL_INTERVAL = 60
 
 PARAMS = {
-    'per_page': 1,
+    'per_page': 5,
 }

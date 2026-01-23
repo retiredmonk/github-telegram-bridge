@@ -1,12 +1,12 @@
-import requests, logging, time
+import requests, logging, time, os
 import random
 from errors import *
 
 
 def fetch (config):
     headers = config.HEADERS
-    user = config.USER_NAME
-    repo = config.REPO_NAME
+    user = os.getenv('GITHUB_OWNER')
+    repo = os.getenv('REPO_NAME')
     params = config.PARAMS
     url = f"{config.GITHUB_URL}/repos/{user}/{repo}/commits"
 
