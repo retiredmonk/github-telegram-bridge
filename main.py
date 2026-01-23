@@ -1,0 +1,85 @@
+import logging
+
+from github_fetch import *
+import config
+from notifier import notify
+from config import *
+from storage import init_db, commit_status, add_details
+
+
+def setup_logging():
+
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
+    file_handler = logging.FileHandler(LOG_FILE)
+    stream_handler = logging.StreamHandler()
+
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    file_handler.setFormatter(formatter)
+    stream_handler.setFormatter(formatter)
+
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
+
+def extract_latest_commit(data: list) -> dict:
+    if not data:
+        raise APIResponseError("Empty commit list from GitHub API")
+
+    return data[0]
+
+
+def main():
+    setup_logging()
+
+    conn, _ = init_db()
+
+    while True:
+        try:
+            data = fetch(config)
+            latest = extract_latest_commit(data)
+
+            sha = latest['sha']
+
+            if commit_status(conn, sha):
+                logging.info(f"Commit is up to date")
+            else:
+                logging.info(f"New commit detected! Saving")
+                add_details(conn, latest)
+                message = (
+                    f"Latest commit in {USER_NAME}/{REPO_NAME}:\n\n"
+                    f"{latest['commit']['message']}\n\n"
+                    f"{latest['commit']['author']['name']}\\n"
+                    f"{latest['sha']}\n\n"
+                    f"{latest['commit']['url']}"
+                           )
+
+                notify(message)
+                logging.info(f"New commit saved successfully")
+
+        except APIRateLimitedError as e:
+            logging.error(f"Rate limit error: {e}")
+
+        except NetworkError as e:
+            logging.error(f"Network error: {e}")
+
+        except APIResponseError as e:
+            logging.error(f"API error: {e}")
+
+        except Exception as e:
+            logging.exception(f"Unexpected crash: {e}")
+
+        conn.close()
+        logging.info(f"Sleeping for {POLL_INTERVAL} seconds...\n")
+        time.sleep(POLL_INTERVAL)
+
+
+if __name__ == "__main__":
+    main()
+
+
+
