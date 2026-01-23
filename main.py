@@ -1,5 +1,3 @@
-import logging, os
-
 from github_fetch import *
 import config
 from notifier import notify
