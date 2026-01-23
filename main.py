@@ -55,7 +55,7 @@ def main():
                     f"{latest['commit']['message']}\n\n"
                     f"{latest['commit']['author']['name']}\\n"
                     f"{latest['sha']}\n\n"
-                    f"{latest['commit']['url']}"
+                    f"{latest['html_url']}"
                            )
 
                 notify(message)
@@ -73,7 +73,6 @@ def main():
         except Exception as e:
             logging.exception(f"Unexpected crash: {e}")
 
-        conn.close()
         logging.info(f"Sleeping for {POLL_INTERVAL} seconds...\n")
         time.sleep(POLL_INTERVAL)
 
