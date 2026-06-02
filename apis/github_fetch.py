@@ -1,6 +1,6 @@
 import requests, logging, time, os
 import random
-from errors import *
+from services.errors_service import *
 
 
 def fetch (config):

@@ -2,11 +2,11 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-DATA_DIR = Path('data')
+DATA_DIR = Path('../data')
 DATA_DIR.mkdir(exist_ok=True)
 DB_FILE = DATA_DIR/"github.db"
 
-LOG_DIR = Path('logs')
+LOG_DIR = Path('../logs')
 LOG_DIR.mkdir(exist_ok=True)
 LOG_FILE = LOG_DIR/"github.log"
 

@@ -1,6 +1,6 @@
 import sqlite3, logging
 from typing import Dict
-from config import DB_FILE
+from services.config_service import DB_FILE
 
 
 def init_db ():

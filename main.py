@@ -1,8 +1,7 @@
-from github_fetch import *
-import config
-from notifier import notify
-from config import *
-from storage import init_db, commit_status, add_details
+from apis.github_fetch import *
+from apis.telegram_notifier import notify
+from services.config_service import *
+from database.storage import init_db, commit_status, add_details
 
 
 def setup_logging():

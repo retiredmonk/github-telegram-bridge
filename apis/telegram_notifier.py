@@ -2,7 +2,7 @@ import logging
 import random
 import time
 import requests
-from config import CHAT_ID, TELEGRAM_URL, TIMEOUT, MAX_RETRIES, BACKOFF_BASE
+from services.config_service import CHAT_ID, TELEGRAM_URL, TIMEOUT, MAX_RETRIES, BACKOFF_BASE
 
 def notify(message: str):
     payload = {
