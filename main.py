@@ -1,4 +1,5 @@
 from apis.github_fetch import *
+from services import config_service as config
 from apis.telegram_notifier import notify
 from services.config_service import *
 from database.storage import init_db, commit_status, add_details
