@@ -51,6 +51,10 @@ def fetch ():
 
             data = response.json()
 
+            if isinstance(data, dict) and data.get("message"):
+                logging.error(f"GitHub API error: {data}")
+                return None
+
             logging.info("Latest Commit Fetched Successfully")
             return data
 
@@ -68,25 +72,27 @@ def fetch ():
             logging.exception(f"Unexpected error: {e}")
             raise APIResponseError(f"Unexpected error: {e}")
 
-
     if saw_rate_limit:
-        logging.error("Rate limit reached, maximum retries reached")
-        raise APIRateLimitedError("Rate limit reached, maximum retries reached")
+        logging.error("Rate limit reached after retries")
 
     elif saw_network_error:
-        logging.critical("Network error occurred")
-        raise NetworkError("Network error occurred")
+        logging.critical("Network error persisted after retries")
 
     elif saw_server_error:
-        logging.error("Server error occurred, maximum retries reached")
-        raise NetworkError("Failed to connect to server, maximum retries reached")
+        logging.error("Server error persisted after retries")
 
     else:
         logging.critical("API failed after maximum retries")
-        raise APIResponseError("Failed to retrieve data after maximum retries")
 
+    return None
 
 def extract_latest_commit(data: list) -> dict:
     if not data:
-        raise APIResponseError("Empty commit list from GitHub API")
+        logging.warning("No commits found")
+        return None
+
+    if not isinstance(data, list):
+        logging.error(f"Unexpected API response: {data}")
+        return None
+
     return data[0]

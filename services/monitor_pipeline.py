@@ -9,11 +9,22 @@ from utils.errors import APIRateLimitedError, NetworkError, APIResponseError
 def run_pipeline():
     try:
         data = fetch()
+
+        if not data:
+            logging.warning("Skipping cycle due to API failure")
+            return
+
         latest = extract_latest_commit(data)
+
+        if not latest:
+            logging.warning("No valid commit found. Skipping cycle.")
+            return
+
         sha = latest['sha']
 
         if commit_status(sha):
             logging.info("No new commit detected")
+
         else:
             inserted = add_details(latest)
 
