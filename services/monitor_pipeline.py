@@ -1,9 +1,9 @@
+import logging
+from clients.github_client import fetch, extract_latest_commit
 from clients.telegram_client import notify
 from database.db import commit_status, add_details
 from services.message_builder import build_message
-from clients.github_client import extract_latest_commit, fetch
 from utils.errors import APIRateLimitedError, NetworkError, APIResponseError
-import logging
 
 
 def run_pipeline():
@@ -15,17 +15,14 @@ def run_pipeline():
         if commit_status(sha):
             logging.info("No new commit detected")
         else:
-            logging.info(f"New commit detected! Saving")
             inserted = add_details(latest)
 
             if inserted:
                 logging.info("New commit saved successfully")
+                message = build_message(latest)
+                notify(message)
             else:
                 logging.warning("Duplicate commit skipped")
-
-            message = build_message(latest)
-            notify(message)
-            logging.info(f"New commit saved successfully")
 
     except APIRateLimitedError as e:
         logging.error(f"Rate limit error: {e}")
