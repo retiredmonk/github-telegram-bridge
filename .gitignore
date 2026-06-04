@@ -6,12 +6,11 @@ venv/
 
 .env
 
-data/*.db
+database/*.db
 
 logs/*.log
 
 .DS_Store
 Thumbs.db
-
 
 .idea/

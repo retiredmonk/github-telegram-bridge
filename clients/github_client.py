@@ -1,39 +1,51 @@
-import requests, logging, time, os
+import requests
+import logging
+import time
 import random
-from services.errors_service import *
+from env import get_settings
+from utils.errors import APIResponseError, APIRateLimitedError, NetworkError
 
+def fetch ():
 
-def fetch (config):
-    headers = config.HEADERS
-    user = os.getenv('GITHUB_OWNER')
-    repo = os.getenv('REPO_NAME')
-    params = config.PARAMS
-    url = f"{config.GITHUB_URL}/repos/{user}/{repo}/commits"
+    config = get_settings()
 
-    base = config.BACKOFF_BASE
-    max_retries = config.MAX_RETRIES
-    timeout = config.TIMEOUT
+    headers = {
+    'Accept': 'application/vnd.github.v3+json',
+    'Authorization': f'token {config.GITHUB_TOKEN}',
+    'User-Agent': 'github-telegram-bridge/1.0'
+    }
+
+    user = config.OWNER
+    repo = config.REPO
+
+    params = {
+        "per_page": 5
+    }
+
+    url = f"https://api.github.com/repos/{user}/{repo}/commits"
+
+    max_retries, base = 3, 2
 
     saw_rate_limit = False
     saw_network_error = False
     saw_server_error = False
 
-    for attempt in range(1,max_retries+1):
+    for attempt in range(1, max_retries+1):
 
         wait = random.uniform (0, base *2 ** attempt)
 
         try:
-            response = requests.get(url, headers=headers, params= params, timeout=timeout)
+            response = requests.get(url, headers=headers, params= params, timeout=10.0)
 
             if response.status_code == 403:
                 saw_rate_limit = True
-                logging.warning('Too many requests, sleeping...')
+                logging.warning(f'Too many requests, sleeping for {wait} seconds')
                 time.sleep(wait)
                 continue
 
             if 500 <= response.status_code <= 599:
                 saw_server_error = True
-                logging.warning('Server error, sleeping...')
+                logging.warning(f"Server error: {response.status_code}")
                 time.sleep(wait)
                 continue
 
@@ -74,12 +86,7 @@ def fetch (config):
         raise APIResponseError("Failed to retrieve data after maximum retries")
 
 
-
-
-
-
-
-
-
-
-
+def extract_latest_commit(data: list) -> dict:
+    if not data:
+        raise APIResponseError("Empty commit list from GitHub API")
+    return data[0]

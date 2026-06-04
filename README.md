@@ -1,114 +1,92 @@
-# GitHub → Telegram Commit Monitor Bot
+# GitHub → Telegram Commit Monitor
 
-A Python automation tool that monitors a GitHub repository for new commits and sends instant alerts to Telegram. Built with resilient API polling, SQLite-based state tracking, and clean modular architecture for reliable long-running execution.
+A lightweight Python service that polls a GitHub repository for new commits and delivers instant Telegram notifications — with deduplication, retry logic, and structured logging built in.
 
-## Features
+---
 
-- Monitors latest commits using GitHub REST API  
-- Retry logic with exponential backoff  
-- SQLite persistence to avoid duplicate alerts  
-- Telegram bot notifications for new commits  
-- Modular design (API, DB, notifier, orchestrator)  
-- File + console logging  
-- Secure API key handling using environment variables  
+## How It Works
+
+```
+GitHub REST API → Fetch latest commit → Compare against SQLite state → Notify via Telegram
+```
+
+Runs as a long-lived polling loop. On each cycle, it fetches the latest commit SHA, checks it against a local SQLite store, and fires a Telegram alert only if the commit is new.
+
+---
 
 ## Architecture
 
-config.py        → environment & constants  
-github_fetch.py → GitHub API client with retries  
-storage.py      → SQLite persistence & deduplication  
-notifier.py     → Telegram message sender  
-main.py         → app orchestrator & polling loop  
+```
+github-telegram-bridge/
+├── clients/
+│   ├── github_fetch.py       # GitHub REST API client with exponential backoff
+│   └── telegram_notifier.py  # Telegram Bot API message dispatcher
+├── database/
+│   └── db.py                 # SQLite persistence & SHA deduplication
+├── services/
+│   └── ...                   # Orchestration logic
+├── utils/
+│   ├── build_message.py      # Notification message formatter
+│   ├── errors.py             # Custom exception types
+│   └── logger.py             # Structured file + console logging
+├── env.py                    # Pydantic settings (loaded from .env)
+└── main.py                   # Entry point
+```
 
-Flow:  
-GitHub API → Fetch → Compare with DB → Save → Notify Telegram
+---
 
 ## Setup
 
-### 1. Clone Repository
+**1. Clone and create a virtual environment**
 
 ```bash
-git clone https://github.com/<your-username>/github-telegram-bridge.git
+git clone https://github.com/retiredmonk/github-telegram-bridge.git
 cd github-telegram-bridge
-```
-
-### 2. Create Virtual Environment
-
-```bash
 python -m venv venv
+source venv/bin/activate        # Linux/macOS
+venv\Scripts\activate.bat       # Windows CMD
 ```
 
-Activate:
-
-PowerShell:
-```powershell
-venv\Scripts\Activate.ps1
-```
-
-CMD:
-```cmd
-venv\Scripts\activate.bat
-```
-
-### 3. Install Dependencies
+**2. Install dependencies**
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Create .env File
+**3. Configure environment**
 
-Create a file named `.env` in project root:
+Create a `.env` file in the project root:
 
 ```env
-GITHUB_PERSONAL_ACCESS_TOKEN=your_github_token_here
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
-CHAT_ID=your_chat_id_here
-
-USER_NAME='github-username'
-REPO_NAME='repository-name'
+GITHUB_TOKEN=your_github_pat
+TELEGRAM_TOKEN=your_bot_token
+CHAT_ID=your_chat_id
+OWNER_NAME=github-username
+REPO_NAME=repository-name
 ```
 
-Never commit `.env` — it is ignored via `.gitignore`.
-
-### 5. Configure Repo to Monitor
-
-Edit `config.py`:
-
-### 6. Run the Bot
+**4. Run**
 
 ```bash
 python main.py
 ```
 
-You should see logs like:
+The bot will begin polling. Push a commit to the configured repo — a Telegram alert fires within the polling interval.
 
-Fetching latest commit...  
-No new commit detected  
-Sleeping for 60 seconds...
+---
 
-Push a new commit to the repo → Telegram alert will trigger.
+## Key Design Decisions
 
-## Database
+- **Pydantic `BaseSettings`** for config — typed, validated, loaded from `.env` with no manual parsing.
+- **SQLite deduplication** — commit SHAs are persisted locally so restarts don't re-trigger old alerts.
+- **Exponential backoff** on GitHub API calls — handles rate limits and transient failures without crashing.
+- **Modular layer separation** — API clients, DB, services, and utils are independently testable.
 
-SQLite file: `data/github.db`  
-Stores commit SHAs to prevent duplicate alerts  
-Automatically created on first run
+---
 
-## Error Handling
+## Potential Extensions
 
-Handles:
-- GitHub API rate limits
-- Network failures
-- Server errors (5xx)
-- Invalid API responses
-
-Bot continues running unless a fatal error occurs.
-
-## Future Improvements
-
-- Multi-repo monitoring  
-- Configurable polling interval  
-- First-run silent mode  
-- Cloud deployment  
-- Webhook-based version  
+- Multi-repo monitoring
+- Webhook-based trigger (replace polling)
+- Configurable polling interval via env
+- Cloud deployment (Railway / Render)
