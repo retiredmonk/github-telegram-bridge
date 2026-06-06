@@ -1,5 +1,6 @@
 import logging
 import time
+from database.db import init_db
 from env import get_settings
 from services.controller import run_pipeline
 from utils.logger import setup_logging
@@ -9,6 +10,7 @@ poll_interval = get_settings().POLL_INTERVAL
 
 def main():
     setup_logging()
+    init_db()
 
     try:
         while True:
