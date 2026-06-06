@@ -4,7 +4,6 @@ from typing import Dict
 
 FILE_PATH = Path("database/commits.db")
 
-
 def get_connection():
     FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
     return sqlite3.connect(FILE_PATH)

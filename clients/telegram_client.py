@@ -1,4 +1,7 @@
-import logging, random, time, requests
+import logging
+import requests
+import random
+import time
 from env import get_settings
 
 def notify(message: str):

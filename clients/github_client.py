@@ -3,7 +3,7 @@ import logging
 import time
 import random
 from env import get_settings
-from utils.errors import APIResponseError, APIRateLimitedError, NetworkError
+from utils.errors import APIResponseError
 
 def fetch ():
 
@@ -86,7 +86,7 @@ def fetch ():
 
     return None
 
-def extract_latest_commit(data: list) -> dict:
+def extract_latest_commit(data: list):
     if not data:
         logging.warning("No commits found")
         return None
