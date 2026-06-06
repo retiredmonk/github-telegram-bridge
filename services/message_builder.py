@@ -1,12 +1,15 @@
-def build_message(latest):
+def build_message(commit: dict) -> str:
+    sha = commit['sha'][:7]
+    message = commit['commit']['message']
+    author = commit['commit']['author']['name']
+    url = commit['html_url']
 
-    message = f"🚨 {len(latest)} New commit(s) Found\n\n"
+    formatted_message = (
+        f"🚀 *New Commit Detected*\n\n"
+        f"👤 Author: {author}\n"
+        f"📝 Message: {message}\n"
+        f"🔑 SHA: `{sha}`\n"
+        f"🔗 View Commit: {url}"
+    )
 
-    for i, commit in enumerate(latest, start=1):
-        message += (
-            f"{i}. Message: {latest['commit']['message']}"
-            f" Author: {latest['commit']['author']['name']}\n"
-            f"URL: {latest['html_url']}"
-        )
-
-    return message.strip()
+    return formatted_message
